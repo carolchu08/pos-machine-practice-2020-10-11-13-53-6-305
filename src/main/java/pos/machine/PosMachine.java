@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 public class PosMachine {
-    static List<ItemInfo> ITEM_INFOS = ItemDataLoader.loadAllItemInfos();
+    static List<Product> ITEM_INFOS = ItemDataLoader.loadAllItemInfos();
     public String printReceipt(List<String> barcodes) {
-        List<ItemInfo> itemInfoList = getItemInfo(barcodes);
+        List<Product> itemInfoList = getItemInfo(barcodes);
         Map<String, List<Integer>> itemCountAndSubTotal = generateSubtotalOfItem(itemInfoList);
         Integer total = 0;
         String str = "***<store earning no money>Receipt***\n";
@@ -22,7 +22,7 @@ public class PosMachine {
         str += "**********************";
         return str;
     }
-    Map<String, List<Integer>> generateSubtotalOfItem(List<ItemInfo> itemInfoList) {
+    Map<String, List<Integer>> generateSubtotalOfItem(List<Product> itemInfoList) {
         Map<String, List<Integer>> result = new HashMap<>();
         Map<String, Integer> countMap = countQuantityOfItems(itemInfoList);
         Map<String, List<Integer>> subTotalMap = calculateSubTotalOfItem(itemInfoList);
@@ -40,11 +40,11 @@ public class PosMachine {
         return result;
     }
 
-    public List<ItemInfo> getItemInfo(List<String> barcodes) {
-        List<ItemInfo> items = new ArrayList<>();
+    public List<Product> getItemInfo(List<String> barcodes) {
+        List<Product> items = new ArrayList<>();
         for(int i = 0 ; i<barcodes.size();i++) {
             for (int j = 0; j < ITEM_INFOS.size(); j++) {
-                if (barcodes.get(i).equals(ITEM_INFOS.get(j).getBarcode())) {
+                if (barcodes.get(i).equals(ITEM_INFOS.get(j).barcode)) {
                     items.add(ITEM_INFOS.get(j));
                 }
             }
@@ -52,35 +52,35 @@ public class PosMachine {
         return items;
     }
 
-    public  Map<String, Integer> countQuantityOfItems( List<ItemInfo> itemInfos){
-              Map<String, Integer> result = new HashMap();
-        for (ItemInfo info : itemInfos) {
-            if (!result.containsKey(info.getName())) {
-                result.put(info.getName(), 1);
+    public  Map<String, Integer> countQuantityOfItems( List<Product> itemInfos){
+        Map<String, Integer> result = new HashMap();
+        for (Product info : itemInfos) {
+            if (!result.containsKey(info.getClass().getName())) {
+                result.put(info.getClass().getName(), 1);
             }
             else {
-                result.put(info.getName(), result.get(info.getName()) + 1);
+                result.put(info.getClass().getName(), result.get(info.getClass().getName()) + 1);
             }
         }
         return result;
     }
 
-    Map<String, List<Integer>> calculateSubTotalOfItem(List<ItemInfo> itemInfoList) {
+    Map<String, List<Integer>> calculateSubTotalOfItem(List<Product> itemInfoList) {
         Map<String, List<Integer>> result = new HashMap<>();
-        for (ItemInfo info : itemInfoList) {
-            if (!result.containsKey(info.getName())) {
+        for (Product info : itemInfoList) {
+            if (!result.containsKey(info.getClass().getName())) {
                 List<Integer> temp = new ArrayList<Integer>();
-                temp.add(info.getPrice());
-                temp.add(info.getPrice());
-                result.put(info.getName(), temp);
+                temp.add(info.price);
+                temp.add(info.price);
+                result.put(info.getClass().getName(), temp);
             }
             else {
-                List<Integer> temp = result.get(info.getName());
-                temp.set(1, temp.get(1) + info.getPrice());
-                result.put(info.getName(), temp);
+                List<Integer> temp = result.get(info.getClass().getName());
+                temp.set(1, temp.get(1) + info.price);
+                result.put(info.getClass().getName(), temp);
             }
         }
         return result;
     }
 
-}
+    }
