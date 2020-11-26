@@ -1,86 +1,52 @@
 package pos.machine;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class PosMachine {
-    static List<Product> ITEM_INFOS = ItemDataLoader.loadAllItemInfos();
+    static List<ItemInfo> ITEM_INFOS = ItemDataLoader.loadAllItemInfos();
+    private List<ItemInfoDetails> itemInfoDetails;
+    private int total;
+
+
     public String printReceipt(List<String> barcodes) {
-        List<Product> itemInfoList = getItemInfo(barcodes);
-        Map<String, List<Integer>> itemCountAndSubTotal = generateSubtotalOfItem(itemInfoList);
-        Integer total = 0;
-        String str = "***<store earning no money>Receipt***\n";
+        ArrayList<ItemInfoDetails> itemInfoDetails = getItemInfo(barcodes);
+        calculateSubTotalOfItem(itemInfoDetails);
+        String receipt = "***<store earning no money>Receipt***\n";
 
-        for (Map.Entry<String, List<Integer>> map : itemCountAndSubTotal.entrySet()) {
-            total += map.getValue().get(2);
-            str += "Name: " + map.getKey() + ", Quantity: " + map.getValue().get(0) + ", Unit price: " + map.getValue().get(1) + " (yuan), Subtotal: " + map.getValue().get(2) + " (yuan)\n";
+        for (ItemInfoDetails itemInfoDetail : this.itemInfoDetails) {
+            receipt += String.format("Name: %s, Quantity: %d, Unit price: %d (yuan), Subtotal: %d (yuan)\n", itemInfoDetail.getName(), itemInfoDetail.getQuantity(), itemInfoDetail.getUnitPrice(), itemInfoDetail.getSubtotal());
         }
-        str += "----------------------\n";
-        str += "Total: " + total + " (yuan)\n";
-        str += "**********************";
-        return str;
-    }
-    Map<String, List<Integer>> generateSubtotalOfItem(List<Product> itemInfoList) {
-        Map<String, List<Integer>> result = new HashMap<>();
-        Map<String, Integer> countMap = countQuantityOfItems(itemInfoList);
-        Map<String, List<Integer>> subTotalMap = calculateSubTotalOfItem(itemInfoList);
-
-        for (Map.Entry<String, Integer> map : countMap.entrySet()) {
-            if (!result.containsKey(map.getKey())) {
-                List<Integer> temp = new ArrayList<>();
-                temp.add(map.getValue());
-                temp.add(subTotalMap.get(map.getKey()).get(0));
-                temp.add(subTotalMap.get(map.getKey()).get(1));
-                result.put(map.getKey(), temp);
-            }
-        }
-
-        return result;
+        receipt += "----------------------\n";
+        receipt += "Total: " + total + " (yuan)\n";
+        receipt += "**********************";
+        return receipt;
     }
 
-    public List<Product> getItemInfo(List<String> barcodes) {
-        List<Product> items = new ArrayList<>();
-        for(int i = 0 ; i<barcodes.size();i++) {
-            for (int j = 0; j < ITEM_INFOS.size(); j++) {
-                if (barcodes.get(i).equals(ITEM_INFOS.get(j).getBarcode())) {
-                    items.add(ITEM_INFOS.get(j));
-                }
-            }
-        }
-        return items;
+
+    public static ArrayList<ItemInfoDetails> getItemInfo(List<String> barcodes) {
+        ArrayList<ItemInfoDetails> itemsInformation = new ArrayList<>();
+        List<String> uniqueBarcodes = barcodes.stream().distinct().collect(Collectors.toList());
+        uniqueBarcodes.forEach(barcode -> itemsInformation.add(retrieveItemDetail(barcode)));
+        return countQuantityOfItems(barcodes, itemsInformation);
+    }
+    private static ItemInfoDetails retrieveItemDetail(String barcode) {
+        ItemInfo item = ITEM_INFOS.stream().filter(ItemInfo -> ItemInfo.getBarcode().equals(barcode)).findFirst().get();
+        return new ItemInfoDetails(item.getBarcode(), item.getName(), item.getPrice());
     }
 
-    public  Map<String, Integer> countQuantityOfItems( List<Product> itemInfos){
-        Map<String, Integer> result = new HashMap();
-        for (Product info : itemInfos) {
-            if (!result.containsKey(info.getName())) {
-                result.put(info.getName(), 1);
-            }
-            else {
-                result.put(info.getName(), result.get(info.getName()) + 1);
-            }
-        }
-        return result;
+
+    private static ArrayList<ItemInfoDetails> countQuantityOfItems(List<String> barcodes, ArrayList<ItemInfoDetails> itemInfoDetails) {
+        itemInfoDetails.forEach(itemInfo -> {
+            itemInfo.setQuantity(Collections.frequency(barcodes, itemInfo.getBarcode()));
+        });
+        return itemInfoDetails;
     }
 
-    Map<String, List<Integer>> calculateSubTotalOfItem(List<Product> itemInfoList) {
-        Map<String, List<Integer>> result = new HashMap<>();
-        for (Product info : itemInfoList) {
-            if (!result.containsKey(info.getName())) {
-                List<Integer> temp = new ArrayList<Integer>();
-                temp.add(info.getPrice());
-                temp.add(info.getPrice());
-                result.put(info.getName(), temp);
-            }
-            else {
-                List<Integer> temp = result.get(info.getName());
-                temp.set(1, temp.get(1) + info.getPrice());
-                result.put(info.getName(), temp);
-            }
-        }
-        return result;
+    public void calculateSubTotalOfItem(List<ItemInfoDetails> itemInfoDetails) {
+
+        this.itemInfoDetails= itemInfoDetails;
+         total = itemInfoDetails.stream().mapToInt(ItemInfoDetails::getSubtotal).sum();
     }
 
-    }
+}
