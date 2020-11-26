@@ -56,7 +56,7 @@ public class PosMachine {
         Map<String, Integer> result = new HashMap();
         for (Product info : itemInfos) {
             if (!result.containsKey(info.getName())) {
-                result.put(info.getClass().getName(), 1);
+                result.put(info.getName(), 1);
             }
             else {
                 result.put(info.getName(), result.get(info.getName()) + 1);
@@ -68,14 +68,14 @@ public class PosMachine {
     Map<String, List<Integer>> calculateSubTotalOfItem(List<Product> itemInfoList) {
         Map<String, List<Integer>> result = new HashMap<>();
         for (Product info : itemInfoList) {
-            if (!result.containsKey(info.getClass().getName())) {
+            if (!result.containsKey(info.getName())) {
                 List<Integer> temp = new ArrayList<Integer>();
                 temp.add(info.getPrice());
                 temp.add(info.getPrice());
                 result.put(info.getName(), temp);
             }
             else {
-                List<Integer> temp = result.get(info.getClass().getName());
+                List<Integer> temp = result.get(info.getName());
                 temp.set(1, temp.get(1) + info.getPrice());
                 result.put(info.getName(), temp);
             }
