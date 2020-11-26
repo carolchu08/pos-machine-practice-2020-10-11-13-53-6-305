@@ -44,7 +44,7 @@ public class PosMachine {
         List<Product> items = new ArrayList<>();
         for(int i = 0 ; i<barcodes.size();i++) {
             for (int j = 0; j < ITEM_INFOS.size(); j++) {
-                if (barcodes.get(i).equals(ITEM_INFOS.get(j).barcode)) {
+                if (barcodes.get(i).equals(ITEM_INFOS.get(j).getBarcode())) {
                     items.add(ITEM_INFOS.get(j));
                 }
             }
@@ -55,11 +55,11 @@ public class PosMachine {
     public  Map<String, Integer> countQuantityOfItems( List<Product> itemInfos){
         Map<String, Integer> result = new HashMap();
         for (Product info : itemInfos) {
-            if (!result.containsKey(info.getClass().getName())) {
+            if (!result.containsKey(info.getName())) {
                 result.put(info.getClass().getName(), 1);
             }
             else {
-                result.put(info.getClass().getName(), result.get(info.getClass().getName()) + 1);
+                result.put(info.getName(), result.get(info.getName()) + 1);
             }
         }
         return result;
@@ -70,14 +70,14 @@ public class PosMachine {
         for (Product info : itemInfoList) {
             if (!result.containsKey(info.getClass().getName())) {
                 List<Integer> temp = new ArrayList<Integer>();
-                temp.add(info.price);
-                temp.add(info.price);
-                result.put(info.getClass().getName(), temp);
+                temp.add(info.getPrice());
+                temp.add(info.getPrice());
+                result.put(info.getName(), temp);
             }
             else {
                 List<Integer> temp = result.get(info.getClass().getName());
-                temp.set(1, temp.get(1) + info.price);
-                result.put(info.getClass().getName(), temp);
+                temp.set(1, temp.get(1) + info.getPrice());
+                result.put(info.getName(), temp);
             }
         }
         return result;
